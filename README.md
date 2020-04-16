@@ -122,7 +122,7 @@ bundle add airrecord
 
 If you haven't already, you'll need to generate an account-level API key and obtain the ID of your Airtable Base.
 
-We'll add these two our `.env` alongside our existing Twilio secrets:
+We'll add these two to our `.env` alongside our existing Twilio secrets:
 ```
 AIRTABLE_API_KEY="xxxxxxxxxxx"
 AIRTABLE_BASE_ID="xxxxxxxxxxx"
@@ -134,7 +134,9 @@ Since `airrecord` has an ActiveRecord-like interface, we'll need to create a mod
 
 Let's reference our API key and Base ID inside the file, and include the name of the table exactly as it appears in Airtable to complete our link.
 
-Out of the gate, we'll include `Company.daily_tasks` as a macro to help us quickly access only those records relevant to our daily agenda. We'll use a bit of short hand to call the `Company.all` method, which selects all records from the table, and then filter on a native Airtable condition that looks for records whose "Next Touch" field is less than or equal to today's date (tasks that are due today or earlier).
+Out of the gate, we'll include `Company.daily_tasks` as a macro to help us quickly access only those records relevant to our daily agenda.
+
+Inside, we'll use shorthand to call the `Company.all` method, which in ActiveRecord-style selects all records from the table. We'll then filter on a native Airtable condition that looks for records whose "Next Touch" field is less than or equal to today's date (i.e. tasks that are due today or earlier).
 
 As a note, I started a directory called `airtable/` to store my Airtable "models" in one place. These could grow over time as we added more and more tables to our integration.
 
@@ -168,6 +170,8 @@ To find the records, we simply call our macro, iterate over the records retrieve
 We can reference any field for a given record as using the column's name in Airtable as the (string) key (e.g. `record["name"]` for "Name")
 
 ```ruby
+agenda_items = Company.daily_tasks
+
 text_message_lines = ["Good morning! Here's your tasks for the day:"]
 
 agenda_items.each do |item|
@@ -187,7 +191,7 @@ We've now sent an Airtable-powered text message!
 
 ### Deploy to Heroku
 
-Building all this plumbing means nothing if we don't have some automation, to wake us up in the morning, right?
+Building all this plumbing means nothing if we don't have some automation to wake us up in the morning, right?
 
 We want to send a text message with our selected set of tasks each morning around 8:00AM. We'll do this by deploying our application to Heroku and then using the free Heroku scheduler to send a message.
 
@@ -208,7 +212,9 @@ git push heroku master
 
 #### Set Environment Variables
 
-The environment variables that live in `.env` are not version-controlled and therefore not accessible inside your app. Manually add these as "Config Vars" for your app in its Settings, 1:1 to each environment variable declared. Once your app is running, these will be set as environment variables and your app should work just as if `.env` had been available.
+The environment variables that live in `.env` are not version-controlled and therefore not accessible inside your app.
+
+Manually add these as "Config Vars" for your app in its Settings, 1:1 to each environment variable declared. Once your app is running, these will be set as environment variables and your app should work just as if `.env` had been available.
 
 #### Check & Schedule
 
